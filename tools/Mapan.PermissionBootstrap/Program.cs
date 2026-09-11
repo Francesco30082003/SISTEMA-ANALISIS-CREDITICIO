@@ -1,0 +1,10 @@
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+var codes=new[]{"Politicas:Read","Politicas:Manage","Analisis:Read","Analisis:Execute","Alertas:Read","Auditoria:Read","Prestamos:Read","Prestamos:Manage","Workflow:Read","Workflow:Manage","Integraciones:Read","Integraciones:Manage","Modelos:Read","Modelos:Manage","Investigacion:Read","Investigacion:Execute","Documentos:Delete","Preevaluacion:Read","Preevaluacion:Execute","Excepciones:Read","Excepciones:Solicitar","Excepciones:Aprobar","Verificacion:Read","Verificacion:Execute","Cosechas:Read","VisitaNegocio:Read","VisitaNegocio:Create","Solicitudes:Decidir"};
+if(!args.Contains("--apply")){Console.WriteLine("Vista previa. Se agregarán solo códigos faltantes, sin roles ni asignaciones:\n"+string.Join("\n",codes)+"\nEjecutar con --apply para aplicar.");return 0;}
+try{
+    var config=new ConfigurationBuilder().AddUserSecrets<Program>().AddEnvironmentVariables().Build();
+    await using var connection=new NpgsqlConnection(config.GetConnectionString("MapanDatabase"));await connection.OpenAsync();await using var tx=await connection.BeginTransactionAsync();var count=0;
+    foreach(var code in codes){await using var command=new NpgsqlCommand("INSERT INTO seguridad.permiso (permiso_id,codigo,nombre,descripcion) VALUES (@id,@code,@name,@description) ON CONFLICT (codigo) DO NOTHING",connection,tx);command.Parameters.AddWithValue("id",Guid.NewGuid());command.Parameters.AddWithValue("code",code);command.Parameters.AddWithValue("name",code.Replace(":Read",": consultar").Replace(":Manage",": administrar").Replace(":Execute",": ejecutar"));command.Parameters.AddWithValue("description","MAPAN: operación configurable por los administradores de cada empresa.");count+=await command.ExecuteNonQueryAsync();}
+    await tx.CommitAsync();Console.WriteLine($"Bootstrap completado: {count} permisos nuevos. Ningún rol ni asignación fue modificado.");return 0;
+}catch(Exception e){Console.Error.WriteLine($"Bootstrap no aplicado ({e.GetType().Name}). No se imprimen detalles de conexión.");return 1;}

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Mapan.Api/Mapan.Api.csproj" />
+    <Project Path="src/Mapan.Application/Mapan.Application.csproj" />
+    <Project Path="src/Mapan.Domain/Mapan.Domain.csproj" />
+    <Project Path="src/Mapan.Infrastructure/Mapan.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Mapan.Application.Tests/Mapan.Application.Tests.csproj" />
+    <Project Path="tests/Mapan.Domain.Tests/Mapan.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
